@@ -31,12 +31,12 @@ w,v = LA.eig(K)
 real_eigen = w.real
 real_eig_vec = v.real 
 Lambda = np.cumsum(real_eigen) / sum(real_eigen)
-#np.who(Lambda)
+
 aa = np.array(Lambda)
 N_lambda = aa[aa<=0.98]
 N_lambda = N_lambda.tolist()
 New_eig_vec = real_eig_vec[0:np.argmax(N_lambda)+1,]
-#T_new_eig_vec = np.transpose(New_eig_vec)
+
 Mean = New_eig_vec.mean(axis=1)
 Sigma = New_eig_vec.std(axis=1)
 T_new_eig_vec = np.transpose(New_eig_vec)

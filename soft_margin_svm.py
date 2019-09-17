@@ -1,0 +1,93 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Aug  4 21:48:56 2019
+
+@author: Omkar
+"""
+
+import pandas as pd
+import numpy as np  
+from sklearn import svm,preprocessing
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score,f1_score,make_scorer,matthews_corrcoef
+from sklearn.model_selection import cross_val_score
+## data 
+
+data = pd.read_csv("file:///D:/ML/Datasets/train_ctrUa4K.csv")
+test = pd.read_csv("file:///D:/ML/Datasets/test_lAUu6dG.csv")
+y = data['Loan_Status']
+X = data.drop(['Loan_ID','Loan_Status'],axis = 1)
+
+## Handling missing value
+
+X.isnull().sum()
+X['Gender'].replace(0,np.nan,inplace = True)
+X['Married'].replace(0,np.nan,inplace = True)
+X['Dependents'].replace(0,np.nan,inplace = True)
+X['Education'].replace(0,np.nan,inplace = True)
+X['Self_Employed'].replace(0,np.nan,inplace = True)
+X['ApplicantIncome'].replace(0,np.nan,inplace = True)
+X['CoapplicantIncome'].replace(0,np.nan,inplace = True)
+X['LoanAmount'].replace(0,np.nan,inplace = True)
+X['Loan_Amount_Term'].replace(0,np.nan,inplace = True)
+X['Property_Area'].replace(0,np.nan,inplace = True)
+
+X.dropna()
+X.Gender.replace(np.nan,np.argmax(X.Gender.value_counts()),inplace=True)
+X.Married.replace(np.nan,np.argmax(X.Married.value_counts()),inplace=True)
+X.Dependents.replace(np.nan,np.argmax(X.Dependents.value_counts()),inplace=True)
+X.Education.replace(np.nan,np.argmax(X.Education.value_counts()),inplace=True)
+X.Self_Employed.replace(np.nan,np.argmax(X.Self_Employed.value_counts()),inplace=True)
+X.Credit_History.replace(np.nan,np.argmax(X.Credit_History.value_counts()),inplace=True)
+X.Property_Area.replace(np.nan,np.argmax(X.Property_Area.value_counts()),inplace=True)
+X.CoapplicantIncome.replace(np.nan,np.argmax(X.CoapplicantIncome.value_counts()),inplace=True)
+X.LoanAmount.replace(np.nan,np.argmax(X.LoanAmount.value_counts()),inplace=True)
+X.Loan_Amount_Term.replace(np.nan,np.argmax(X.Loan_Amount_Term.value_counts()),inplace=True)
+
+X.fillna(X.mean())
+
+X.Gender.replace('Male',0,inplace=True)
+X.Gender.replace('Female',1,inplace=True)
+
+X.Married.replace('Yes',0,inplace=True)
+X.Married.replace('No',1,inplace=True)
+
+X.Education.replace('Graduate',0,inplace=True)
+X.Education.replace('Not Graduate',1,inplace=True)
+
+X.Self_Employed.replace('Yes',0,inplace=True)
+X.Self_Employed.replace('No',1,inplace=True)
+
+X.Property_Area.replace('Urban',0,inplace=True)
+X.Property_Area.replace('Rural',1,inplace=True)
+X.Property_Area.replace('Semiurban',2,inplace=True)
+X =pd.DataFrame(preprocessing.scale(X))
+## test train split
+
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size = 0.2,random_state = 42)
+
+## Kernel
+
+def polynomial(a,b):
+    return (1 + np.dot(a,b))**2 
+## model
+C = [0.01,1,10,100,1000,10000]
+Bst_MCC=[]    
+for c in C:    
+    model = svm.SVC(C = c,probability =True)
+    model.fit(X_train,y_train)    
+## prediction
+    pred = model.predict(X_test)
+    pred_prob = model.predict_proba(X_test)
+    cm = confusion_matrix(y_test,pred)
+    MCC = matthews_corrcoef(y_test,pred)  
+    score = make_scorer(matthews_corrcoef)    
+    cv = cross_val_score(estimator=model,X=X,y=y,cv=5,scoring=score)
+    m_MCC = np.max(cv)
+    Bst_MCC.append(m_MCC)
+    BEST_MCC = np.max(Bst_MCC)
+#BEST = np.max(Bst_MCC)
+## CV fold
+print(Bst_MCC)
+print("Best MCC is " ,BEST_MCC)

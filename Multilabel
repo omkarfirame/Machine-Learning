@@ -1,0 +1,40 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Sep  6 09:52:21 2019
+
+Binary relevance - Emotion dataset
+
+@author: Omkar
+"""
+
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split,cross_val_score
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score,make_scorer
+
+data = pd.read_csv("file:///D:/ML/Datasets/Multilabel/Emotions/emotions.csv")
+data.isnull().sum()
+
+column_indx = [72,73,74,75,76,77]
+y=[]
+for i in np.arange(len(column_indx)):
+    Y = data[data.columns[column_indx[i]]]
+    y.append(Y)
+
+X = data.drop(data.columns[column_indx],axis = 1)
+prediction = []
+Accuracy =[]
+for j in np.arange(len(column_indx)):    
+    X_train,X_test,y_train,y_test = train_test_split(X,y[j],test_size = 0.2, random_state = 42)
+    
+    model = RandomForestClassifier()
+    model.fit(X_train,y_train)
+    y_pred = model.predict(X_test)
+    score = make_scorer(accuracy_score)
+    cv = cross_val_score(estimator=model,X=X,y=y[j],cv=5,scoring=score)
+    cv_accuracy = np.max(cv)
+    
+    prediction.append(y_pred)
+    Accuracy.append(cv_accuracy)
+    

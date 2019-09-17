@@ -1,0 +1,40 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Sep  6 10:29:18 2019
+
+Label Powerset - Emotion dataset
+
+@author: Omkar
+"""
+
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split,cross_val_score
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score,make_scorer
+
+data = pd.read_csv("file:///D:/ML/Datasets/Multilabel/Emotions/emotions.csv")
+
+column_indx = [72,73,74,75,76,77]
+
+X = data.drop(data.columns[column_indx],axis = 1)
+clas = data[data.columns[column_indx]].values.tolist()
+
+decimal=[]
+for i in np.arange(len(clas)):
+    r =  int(str(int("".join(map(str, clas[i])))),2)
+    decimal.append(r)
+
+y = pd.DataFrame(decimal)
+y.columns = ["Class"]
+
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size = 0.2, random_state = 42)
+
+model = RandomForestClassifier()
+model.fit(X_train,y_train)
+y_pred = model.predict(X_test)
+score = make_scorer(accuracy_score)
+cv = cross_val_score(estimator=model,X=X,y=y,cv=5,scoring=score)
+cv_accuracy = np.max(cv)
+
+    
